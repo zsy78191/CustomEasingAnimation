@@ -1,0 +1,272 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Customeasinganimation by zsy78191</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Customeasinganimation</h1>
+        <p>A simple function to make bezier animation.</p>
+
+        <p class="view"><a href="https://github.com/zsy78191/CustomEasingAnimation">View the Project on GitHub <small>zsy78191/CustomEasingAnimation</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/zsy78191/CustomEasingAnimation/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/zsy78191/CustomEasingAnimation/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/zsy78191/CustomEasingAnimation">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="customeasinganimation" class="anchor" href="#customeasinganimation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>CustomEasingAnimation</h1>
+
+<p>A simple function to make bezier animation.
+这一段代码，可以通用于三次贝塞尔缓动动画。</p>
+
+<p>比如下段代码，将view平移了250px，并且动态改变label的文字。</p>
+
+<div class="highlight highlight-source-objc"><pre>[CustomEasingAnimation <span class="pl-c1">easingFrom:</span><span class="pl-c1">0</span> <span class="pl-c1">to:</span><span class="pl-c1">250</span> <span class="pl-c1">interval:</span><span class="pl-c1">1</span> <span class="pl-c1">timing:</span>[CAMediaTimingFunction <span class="pl-c1">functionWithControlPoints:</span><span class="pl-c1">1</span> :<span class="pl-c1">0</span> :.<span class="pl-c1">5</span> :<span class="pl-c1">1.51</span>] <span class="pl-c1">block:</span>^(<span class="pl-c1">CGFloat</span> value) {
+        view.<span class="pl-smi">transform</span> = <span class="pl-c1">CGAffineTransformMakeTranslation</span>(value, <span class="pl-c1">0</span>);
+        label.<span class="pl-smi">text</span> = [<span class="pl-c1">NSString</span> <span class="pl-c1">stringWithFormat:</span><span class="pl-s"><span class="pl-pds">@"</span><span class="pl-c1">%.2f</span><span class="pl-pds">"</span></span>,value];
+} <span class="pl-c1">comeplte:</span>^{
+
+}];</pre></div>
+
+<p>demo效果</p>
+
+<p><img src="https://raw.githubusercontent.com/zsy78191/CustomEasingAnimation/master/timing.gif" alt=""></p>
+
+<h1>
+<a id="缓动动画-easing-animation" class="anchor" href="#%E7%BC%93%E5%8A%A8%E5%8A%A8%E7%94%BB-easing-animation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>缓动动画 （Easing Animation）</h1>
+
+<p>缓动动画是目前iOS系统中非常常见的一类动画，大家一定不陌生。例如CocoaTouch框架中<code>CASpringAnimation</code>，是一种弹簧缓动动画，再比如<code>POP</code>框架的<code>POPSpringAnimation</code>，也是一种弹簧缓动动画，他们的效果如下：</p>
+
+<p><img src="https://segmentfault.com/img/bVstTb" alt=""></p>
+
+<p>当然<code>弹簧动画</code>是一种特殊的缓动动画，我们更常见的是根据bezier（贝赛尔）曲线构建的三次贝塞尔缓动动画。如果你不知道我在说啥，请看<a href="https://segmentfault.com/a/1190000004365988">Animations开源动效分析（二）POP-Stroke动画
+</a></p>
+
+<h1>
+<a id="bezier-曲线" class="anchor" href="#bezier-%E6%9B%B2%E7%BA%BF" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>bezier 曲线</h1>
+
+<p>bezier曲线我在大学中并没有接触过，估计学过计算机图学的朋友一定很熟悉，这里就不详细介绍了。简单说就是一条曲线，由起点、终点和两个控制点决定的一条曲线。在我们的缓动动画中，这条曲线决定了动画的效果。并且简化为起点在(0,0)，终点在(1,1)的一条曲线，所以这条曲线只由两个控制点决定。</p>
+
+<p>这个曲线在Cocoa中对应的就是<code>CAMediaTimingFunction</code>类，下图是用一个开源软件生成的，软件地址是<a href="https://github.com/keefo/CATweaker">keefo/CATweaker</a>。</p>
+
+<p><img src="https://segmentfault.com/img/bVstNN" alt=""></p>
+
+<div class="highlight highlight-source-objc"><pre><span class="pl-c">/* Creates a timing function modelled on a cubic Bezier curve. The end</span>
+<span class="pl-c"> * points of the curve are at (0,0) and (1,1), the two points 'c1' and</span>
+<span class="pl-c"> * 'c2' defined by the class instance are the control points. Thus the</span>
+<span class="pl-c"> * points defining the Bezier curve are: '[(0,0), c1, c2, (1,1)]' */</span>
+
++ (<span class="pl-k">instancetype</span>)functionWithControlPoints:(<span class="pl-k">float</span>)c1x :(<span class="pl-k">float</span>)c1y :(<span class="pl-k">float</span>)c2x :(<span class="pl-k">float</span>)c2y;
+
+- (<span class="pl-k">instancetype</span>)initWithControlPoints:(<span class="pl-k">float</span>)c1x :(<span class="pl-k">float</span>)c1y :(<span class="pl-k">float</span>)c2x :(<span class="pl-k">float</span>)c2y;</pre></div>
+
+<p>传入的四个值，就是两个控制点的x，y坐标。范围是[0,1]。</p>
+
+<h1>
+<a id="常见的easing" class="anchor" href="#%E5%B8%B8%E8%A7%81%E7%9A%84easing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>常见的Easing</h1>
+
+<p>常见的Easing有如下几种，你一定见过</p>
+
+<ul>
+<li>linear 直线</li>
+<li>easeIn 缓入</li>
+<li>easeOut 缓出</li>
+<li>easeInOut 缓出缓入</li>
+</ul>
+
+<h1>
+<a id="bezier曲线填充" class="anchor" href="#bezier%E6%9B%B2%E7%BA%BF%E5%A1%AB%E5%85%85" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>bezier曲线填充</h1>
+
+<p>所谓的<code>填充</code>，就是通过bezier方程，根据x计算y的过程。比如在[0,1]区间内，取100个等距x值，对应计算y值，将这些点绘制再坐标轴上，x取得越多，整个点组成的曲线月平滑，却趋近于bezier曲线。</p>
+
+<p>在我们做动画时，考虑到计时器（CADisplayLink）的刷新频率是60帧/秒，所以采样个数根据动画时长x频率决定。</p>
+
+<p>首先来计算采样点，这段算法是我从wiki上搬过来的，数学渣伤不起。</p>
+
+<p>头文件</p>
+
+<div class="highlight highlight-source-c"><pre>#<span class="pl-k">ifndef</span> bezier_h
+#<span class="pl-k">define</span> <span class="pl-en">bezier_h</span>
+
+#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">&lt;</span>stdio.h<span class="pl-pds">&gt;</span></span>
+
+<span class="pl-c">/*</span>
+<span class="pl-c"> 產生三次方貝茲曲線的程式碼</span>
+<span class="pl-c"> */</span>
+
+<span class="pl-k">typedef</span> <span class="pl-k">struct</span>
+{
+    <span class="pl-k">float</span> x;
+    <span class="pl-k">float</span> y;
+}
+Point2D;
+Point2D <span class="pl-en">PointOnCubicBezier</span>( Point2D* cp, <span class="pl-k">float</span> t );
+<span class="pl-k">void</span> <span class="pl-en">ComputeBezier</span>( Point2D* cp, <span class="pl-k">int</span> numberOfPoints, Point2D* curve );
+
+#<span class="pl-k">endif</span> <span class="pl-c">/* bezier_h */</span></pre></div>
+
+<p>c文件</p>
+
+<div class="highlight highlight-source-c"><pre>#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>bezier.h<span class="pl-pds">"</span></span>
+
+<span class="pl-c">/*</span>
+<span class="pl-c"> cp在此是四個元素的陣列:</span>
+<span class="pl-c"> cp[0]為起始點，或上圖中的P0</span>
+<span class="pl-c"> cp[1]為第一個控制點，或上圖中的P1</span>
+<span class="pl-c"> cp[2]為第二個控制點，或上圖中的P2</span>
+<span class="pl-c"> cp[3]為結束點，或上圖中的P3</span>
+<span class="pl-c"> t為參數值，0 &lt;= t &lt;= 1</span>
+<span class="pl-c"> */</span>
+
+Point2D <span class="pl-en">PointOnCubicBezier</span>( Point2D* cp, <span class="pl-k">float</span> t )
+{
+    <span class="pl-k">float</span>   ax, bx, cx;
+    <span class="pl-k">float</span>   ay, by, cy;
+    <span class="pl-k">float</span>   tSquared, tCubed;
+    Point2D result;
+
+    <span class="pl-c">/*計算多項式係數*/</span>
+
+    cx = <span class="pl-c1">3.0</span> * (cp[<span class="pl-c1">1</span>].<span class="pl-smi">x</span> - cp[<span class="pl-c1">0</span>].<span class="pl-smi">x</span>);
+    bx = <span class="pl-c1">3.0</span> * (cp[<span class="pl-c1">2</span>].<span class="pl-smi">x</span> - cp[<span class="pl-c1">1</span>].<span class="pl-smi">x</span>) - cx;
+    ax = cp[<span class="pl-c1">3</span>].<span class="pl-smi">x</span> - cp[<span class="pl-c1">0</span>].<span class="pl-smi">x</span> - cx - bx;
+
+    cy = <span class="pl-c1">3.0</span> * (cp[<span class="pl-c1">1</span>].<span class="pl-smi">y</span> - cp[<span class="pl-c1">0</span>].<span class="pl-smi">y</span>);
+    by = <span class="pl-c1">3.0</span> * (cp[<span class="pl-c1">2</span>].<span class="pl-smi">y</span> - cp[<span class="pl-c1">1</span>].<span class="pl-smi">y</span>) - cy;
+    ay = cp[<span class="pl-c1">3</span>].<span class="pl-smi">y</span> - cp[<span class="pl-c1">0</span>].<span class="pl-smi">y</span> - cy - by;
+
+    <span class="pl-c">/*計算位於參數值t的曲線點*/</span>
+
+    tSquared = t * t;
+    tCubed = tSquared * t;
+
+    result.<span class="pl-smi">x</span> = (ax * tCubed) + (bx * tSquared) + (cx * t) + cp[<span class="pl-c1">0</span>].<span class="pl-smi">x</span>;
+    result.<span class="pl-smi">y</span> = (ay * tCubed) + (by * tSquared) + (cy * t) + cp[<span class="pl-c1">0</span>].<span class="pl-smi">y</span>;
+
+    <span class="pl-k">return</span> result;
+}
+
+<span class="pl-c">/*</span>
+<span class="pl-c"> ComputeBezier以控制點cp所產生的曲線點，填入Point2D結構的陣列。</span>
+<span class="pl-c"> 呼叫者必須分配足夠的記憶體以供輸出結果，其為&lt;sizeof(Point2D) numberOfPoints&gt;</span>
+<span class="pl-c"> */</span>
+
+<span class="pl-k">void</span> <span class="pl-en">ComputeBezier</span>( Point2D* cp, <span class="pl-k">int</span> numberOfPoints, Point2D* curve )
+{
+    <span class="pl-k">float</span>   dt;
+    <span class="pl-k">int</span>    i;
+    dt = <span class="pl-c1">1.0</span> / ( numberOfPoints - <span class="pl-c1">1</span> );
+    <span class="pl-k">for</span>( i = <span class="pl-c1">0</span>; i &lt; numberOfPoints; i++)
+        curve[i] = <span class="pl-c1">PointOnCubicBezier</span>( cp, i*dt );
+}</pre></div>
+
+<p>首先佩服数学好的大牛们，也感谢写代码的前辈们，我们通过上面这段代码来计算bezier采样点</p>
+
+<div class="highlight highlight-source-objc"><pre>+ (<span class="pl-c1">NSArray</span> *)calculateFrameFromValue:(<span class="pl-c1">CGFloat</span>)fromValue toValue:(<span class="pl-c1">CGFloat</span>)toValue timing:(CAMediaTimingFunction *)function frameCount:(<span class="pl-c1">size_t</span>)frameCount
+{
+    <span class="pl-k">float</span> p[<span class="pl-c1">4</span>][<span class="pl-c1">2</span>];
+    Point2D cp[<span class="pl-c1">4</span>];
+
+    <span class="pl-k">for</span> (<span class="pl-k">int</span> i = <span class="pl-c1">0</span>; i &lt; <span class="pl-c1">4</span>; ++i) {
+        [function <span class="pl-c1">getControlPointAtIndex:</span>i <span class="pl-c1">values:</span>p[i]];
+        <span class="pl-c">//        NSLog(@"{%f,%f}",p[i][0],p[i][1]);</span>
+        cp[i].<span class="pl-smi">x</span> = p[i][<span class="pl-c1">0</span>];
+        cp[i].<span class="pl-smi">y</span> = p[i][<span class="pl-c1">1</span>];
+    }
+
+    Point2D* curve = (Point2D*)<span class="pl-c1">malloc</span>(frameCount * <span class="pl-k">sizeof</span>(Point2D));
+    <span class="pl-c1">ComputeBezier</span>(cp, (<span class="pl-k">int</span>)frameCount, curve);
+
+    <span class="pl-c1">NSMutableArray</span>* array = [<span class="pl-c1">NSMutableArray</span> <span class="pl-c1">array</span>];
+    <span class="pl-k">for</span> (<span class="pl-k">int</span> i = <span class="pl-c1">0</span>; i &lt; frameCount; ++i) {
+        <span class="pl-c">//        NSLog(@"{%f,%f}",curve[i].x,curve[i].y);</span>
+        [array <span class="pl-c1">addObject:</span>@(curve[i].y * (toValue - fromValue) + fromValue)];
+    }
+
+    <span class="pl-c1">free</span>(curve);
+
+    <span class="pl-k">return</span> [array <span class="pl-c1">copy</span>];
+}</pre></div>
+
+<p>我们将<code>CAMediaTimingFunction</code>的两个控制点转成Point2D结构体，得到采样点的Y坐标数组，最后根据起点终点计算属性点，返回。</p>
+
+<h1>
+<a id="动起来" class="anchor" href="#%E5%8A%A8%E8%B5%B7%E6%9D%A5" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>动起来</h1>
+
+<p>获得位置数据以后，我们让他动起来</p>
+
+<div class="highlight highlight-source-objc"><pre><span class="pl-k">@interface</span> <span class="pl-en">CustomEasingAnimation</span>()
+{
+    <span class="pl-k">int</span> _count;
+    <span class="pl-k">int</span> _total;
+}
+<span class="pl-k">@property</span> (<span class="pl-k">nonatomic</span>, <span class="pl-k">strong</span>) CADisplayLink* link;
+<span class="pl-k">@property</span> (<span class="pl-k">nonatomic</span>, <span class="pl-k">strong</span>) <span class="pl-k">void</span> (^ block)(<span class="pl-c1">CGFloat</span> value);
+<span class="pl-k">@property</span> (<span class="pl-k">nonatomic</span>, <span class="pl-k">strong</span>) <span class="pl-k">void</span> (^ finish) ();
+<span class="pl-k">@property</span> (<span class="pl-k">nonatomic</span>, <span class="pl-k">strong</span>) <span class="pl-c1">NSArray</span>* data;
+<span class="pl-k">@end</span></pre></div>
+
+<p>这里要用到就是<code>CADisplayLink</code>类，进行计时。</p>
+
+<div class="highlight highlight-source-objc"><pre>+ (<span class="pl-k">void</span>)easingFrom:(<span class="pl-c1">CGFloat</span>)fromValue to:(<span class="pl-c1">CGFloat</span>)toValue interval:(<span class="pl-c1">NSTimeInterval</span>)interval timing:(CAMediaTimingFunction *)function block:(<span class="pl-k">void</span> (^)(<span class="pl-c1">CGFloat</span>))block comeplte:(<span class="pl-k">void</span> (^)(<span class="pl-k">void</span>))finish
+{
+    CustomEasingAnimation* e = [[CustomEasingAnimation <span class="pl-c1">alloc</span>] <span class="pl-c1">init</span>];
+    e.<span class="pl-smi">link</span> = [CADisplayLink <span class="pl-c1">displayLinkWithTarget:</span>e <span class="pl-c1">selector:</span><span class="pl-k">@selector</span>(<span class="pl-c1">tick:</span>)];
+    [e.<span class="pl-c1">link</span> <span class="pl-c1">addToRunLoop:</span>[<span class="pl-c1">NSRunLoop</span> <span class="pl-c1">currentRunLoop</span>] <span class="pl-c1">forMode:</span><span class="pl-c1">NSDefaultRunLoopMode</span>];
+    e.<span class="pl-smi">block</span> = block;
+    e.<span class="pl-smi">data</span> = [[<span class="pl-v">self</span> <span class="pl-c1">class</span>] <span class="pl-c1">calculateFrameFromValue:</span>fromValue <span class="pl-c1">toValue:</span>toValue <span class="pl-c1">timing:</span>function <span class="pl-c1">frameCount:</span>interval * <span class="pl-c1">60</span> / e.<span class="pl-c1">link</span>.frameInterval];
+    e.<span class="pl-smi">finish</span> = finish;
+}
+
+- (<span class="pl-k">void</span>)setData:(<span class="pl-c1">NSArray</span> *)data
+{
+    _data = data;
+    _total = (<span class="pl-k">int</span>)data.<span class="pl-smi">count</span>;
+    _count = <span class="pl-c1">0</span>;
+}
+
+- (<span class="pl-k">void</span>)tick:(CADisplayLink*)sender
+{
+    <span class="pl-k">if</span> (_count &lt; _total) {
+        <span class="pl-k">if</span> (self.<span class="pl-smi">block</span>) {
+            self.<span class="pl-c1">block</span>([<span class="pl-v">self</span>.data[_count] <span class="pl-c1">doubleValue</span>]);
+        }
+        _count ++;
+    }
+    <span class="pl-k">else</span>
+    {
+        <span class="pl-k">if</span> (self.<span class="pl-smi">finish</span>) {
+            self.<span class="pl-c1">finish</span>();
+        }
+        [sender <span class="pl-c1">invalidate</span>];
+    }
+}</pre></div>
+
+<p>代码就不详尽解释了，没有什么难点（难的wiki拿来的代码都搞定了，那段代码我也看不懂，主要不懂bezier方程计算），有疑问可以留言。</p>
+
+<p>其实整个功能，<a href="https://github.com/facebook/pop">POP</a>和<a href="https://github.com/storehouse/Advance">Advance</a>（一个新的swfit动画框架，非常屌）都有相关功能，但这两个框架比较比较重量级，所以如果只是需要用到一些简单功能可以选择我哦。   </p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/zsy78191">zsy78191</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
