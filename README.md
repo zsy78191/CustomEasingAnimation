@@ -11,6 +11,9 @@ A simple function to make bezier animation.
        
 }];
 ```
+demo效果
+
+![](https://raw.githubusercontent.com/zsy78191/CustomEasingAnimation/master/timing.gif)
 
 # 缓动动画 （Easing Animation）
 
